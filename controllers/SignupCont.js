@@ -8,10 +8,11 @@ const bcrypt=require("bcryptjs");
 async function doSignup(req,res)
 {
     console.log(req.body);
+
     // const saltRound=10;
     // const hash_password=await bcrypt.hash(req.body.password,saltRound);
-    // console.log("***"+hash_password);
     // req.body.password=hash_password;
+
     const doc = new modelSignup(req.body);
     doc.save()
       .then((retDoc) => {
@@ -23,14 +24,15 @@ async function doSignup(req,res)
       });
 }
 
-function doLogin(req,res)
+ function doLogin(req,res)
 {
   console.log(req.query);
   modelSignup.findOne({email:req.query.email})
   .then((result)=>{
     if(result)
     {
-      if(result.password===req.query.password)
+      const match=bcrypt.compare(req.query.password,result.password)
+      if(match)
      {
       //creation of webtoken==================
       let skey=process.env.SEC_KEY;
