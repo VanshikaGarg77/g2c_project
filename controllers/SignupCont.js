@@ -1,14 +1,19 @@
-const {getModelSignup}=require("../models/modelSignup");
-const modelSignup=getModelSignup();
+// const {getModelSignup}=require("../models/modelSignup");
+// const modelSignup=getModelSignup();
+const modelSignup=require("../models/modelSignup");
 const dotenv=require("dotenv");
 const jwt=require("jsonwebtoken");
+const bcrypt=require("bcryptjs");
 
-function doSignup(req,res)
+async function doSignup(req,res)
 {
     console.log(req.body);
+    // const saltRound=10;
+    // const hash_password=await bcrypt.hash(req.body.password,saltRound);
+    // console.log("***"+hash_password);
+    // req.body.password=hash_password;
     const doc = new modelSignup(req.body);
-    doc
-      .save()
+    doc.save()
       .then((retDoc) => {
         res.set("json");
         res.json({ status: true, rec: retDoc,type:req.body.type }); //retDoc is an object
@@ -20,6 +25,7 @@ function doSignup(req,res)
 
 function doLogin(req,res)
 {
+  console.log(req.query);
   modelSignup.findOne({email:req.query.email})
   .then((result)=>{
     if(result)
@@ -28,7 +34,7 @@ function doLogin(req,res)
      {
       //creation of webtoken==================
       let skey=process.env.SEC_KEY;
-      let token=jwt.sign({result},skey,{expiresIn:"1m"});
+      let token=jwt.sign({result},skey,{expiresIn:"30m"});
 
       res.json({status:true,msg:"Login successful",type:result.type,jtoken:token})
      }
