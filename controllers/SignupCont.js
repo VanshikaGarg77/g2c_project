@@ -24,30 +24,27 @@ async function doSignup(req,res)
       });
 }
 
- function doLogin(req,res)
+async function doLogin(req,res)
 {
   console.log(req.query);
-  modelSignup.findOne({email:req.query.email})
-  .then((result)=>{
-    if(result)
-    {
-      const match=bcrypt.compare(req.query.password,result.password)
-      if(match)
-     {
-      //creation of webtoken==================
-      let skey=process.env.SEC_KEY;
-      let token=jwt.sign({result},skey,{expiresIn:"30m"});
+  try {
+    const result = await modelSignup.findOne({ email: req.query.email });
+    if (result) {
+      const match = await bcrypt.compare(req.query.password, result.password); // Use await here
+      if (match) {
+        // Creation of web token
+        const skey = process.env.SEC_KEY;
+        const token = jwt.sign({ result }, skey, { expiresIn: "30m" });
 
-      res.json({status:true,msg:"Login successful",type:result.type,jtoken:token})
-     }
-      else
-      res.json({status:true,msg:"Incorrect password"})
+        res.json({ status: true, msg: "Login successful", type: result.type, jtoken: token });
+      } else {
+        res.json({ status: true, msg: "Incorrect password" });
+      }
+    } else {
+      res.json({ status: true, msg: "User doesn't exist" });
     }
-    else
-    res.json({status:true,msg:"User doesn't exist"})
-  })
-  .catch((err)=>{
-    res.json({ status: false,err:err.message });
-  })
+  } catch (err) {
+    res.json({ status: false, err: err.message });
+  }
 }
 module.exports={doSignup,doLogin};
